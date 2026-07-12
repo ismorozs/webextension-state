@@ -1,0 +1,19 @@
+{
+  "name": "webextension-state",
+  "version": "0.0.2",
+  "description": "Library for managing the state of webextensions, employing reactivity, wrapping and uniting usage of different storages' values and common variables with a simple universal interface",
+  "license": "MIT",
+  "author": "Igor Morozov <ismorozs@gmail.com>",
+  "main": "./dist/webextension-state.js",
+  "scripts": {
+    "start": "webpack"
+  },
+  "devDependencies": {
+    "webextension-polyfill": "0.12.0",
+    "webpack": "5.108.4",
+    "webpack-cli": "7.2.1"
+  },
+  "homepage": "https://github.com/ismorozs/webextension-state",
+  "repository": "https://github.com/ismorozs/webextension-state.git",
+  "bugs": "https://github.com/ismorozs/webextension-state/issues"
+}
