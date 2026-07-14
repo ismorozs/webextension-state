@@ -1,6 +1,6 @@
 {
   "name": "webextension-state",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Library for managing the state of webextensions, employing reactivity, wrapping and uniting usage of different storages' values and common variables with a simple universal interface",
   "license": "MIT",
   "author": "Igor Morozov <ismorozs@gmail.com>",
