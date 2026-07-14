@@ -5,15 +5,15 @@ const ARGUMENT_NAMES = /([^\s,]+)/g;
 
 const STATE = {};
 const ACCESSORS = {};
+const CHANGE_LISTENERS = [];
 const COMPUTED_DEPENDENCIES = {};
 const COMPUTED_ARGUMENTS = {};
 
 
 if (isBackgroundScript()) {
-  browser.storage.session.onChanged.addListener(onStorageChange);
-  browser.storage.local.onChanged.addListener(onStorageChange);
+  browser.storage.session.onChanged.addListener(onStateChange);
+  browser.storage.local.onChanged.addListener(onStateChange);
 }
-
 
 async function addPersistentState (initialState) {
   return await addState(initialState, true);
@@ -57,17 +57,19 @@ function setupValue (key, value, defaultValue, storageType) {
 }
 
 function createAccessor(key, value, storageType) {
-  const accessor = {
+  const accessor = () => STATE[key].value;
+
+  Object.assign(accessor, {
     valueOf: () => STATE[key].value,
     toString: () => STATE[key].value,
     set: (value) => setValue(key, value, storageType),
-    onChange: (cb) => (STATE[key].listeners = STATE[key].listeners.concat(cb)),
+    onChange: (cb) => STATE[key].listeners.push(cb),
     removeListener: (removeCb) =>
       (STATE[key].listeners = STATE[key].listeners.filter(
         (cb) => cb !== removeCb,
       )),
     reset: () => setValue(key, STATE[key].defaultValue, storageType),
-  };
+  });
 
   return new Proxy(accessor, {
     get: (target, prop) => {
@@ -85,10 +87,10 @@ function setValue (key, value, storageType) {
     return browser.storage[storageType].set({ [key]: value });
   }
 
-  onStorageChange({ [key]: { newValue: value } });
+  onStateChange({ [key]: { newValue: value } });
 }
 
-function onStorageChange (changes) {
+function onStateChange (changes) {
   const realChanges = {};
 
   for (const key in changes) {
@@ -97,15 +99,17 @@ function onStorageChange (changes) {
 
     if (prevValue !== newValue) {
       STATE[key].value = newValue;
-      realChanges[key] = prevValue;
+      realChanges[key] = { newValue, prevValue };
 
       updateDependencies(key, realChanges);
     }
   }
 
   for (const key in realChanges) {
-    STATE[key].listeners.forEach((cb) => cb(STATE[key].value, getStateValues(), realChanges[key]));
+    STATE[key].listeners.forEach((cb) => cb(STATE[key].value, getState(), realChanges[key]));
   }
+
+  CHANGE_LISTENERS.forEach((cb) => cb(getState(), realChanges));
 }
 
 function updateDependencies (key, realChanges) {
@@ -116,14 +120,18 @@ function updateDependencies (key, realChanges) {
       const newValue = STATE[name].computeFn.apply(null, getArguments(name));
       if (prevValue !== newValue) {
         STATE[name].value = newValue;
-        realChanges[name] = prevValue;
+        realChanges[name] = { newValue, prevValue };
         updateDependencies(name, realChanges);
       }
     });
   }
 }
 
-function getStateValues () {
+function getState (cb) {
+  if (cb) {
+    return cb.call(null, { ...ACCESSORS });
+  }
+
   const newObj = {};
 
   for (const key in STATE) {
@@ -131,6 +139,10 @@ function getStateValues () {
   }
 
   return newObj;
+}
+
+function setState(mutateObj) {
+  Object.entries(mutateObj).forEach(([k, v]) => ACCESSORS[k].set(v));
 }
 
 function isBackgroundScript() {
@@ -167,21 +179,37 @@ function setupDependencies(computedValueName, computeFn) {
 }
 
 function getArguments (computedName) {
-  const values = getStateValues();
+  const values = getState();
   return COMPUTED_ARGUMENTS[computedName].map((name) => values[name]).concat(values);
-}
-
-function getAccessor () {
-  return { ...ACCESSORS };
 }
 
 function resetAll () {
   Object.entries(ACCESSORS).forEach((k, { reset }) => reset());
 }
 
-export default {
+function onGlobalStateChange (observables, cb) {
+  if (typeof observables === 'function') {
+    return CHANGE_LISTENERS.push(observables);
+  }
+
+  observables.forEach((name) => ACCESSORS[name].onChange(cb));
+}
+
+function removeGlobalStateListener(observables, removeCb) {
+  if (typeof observables === 'function') {
+    const idx = CHANGE_LISTENERS.findIndex((cb) => cb === observables);
+    return CHANGE_LISTENERS.splice(idx, 1);
+  }
+
+  observables.forEach((name) => ACCESSORS[name].removeListener(removeCb));
+}
+
+export default Object.assign(getState, {
   add: addState,
   addPersistent: addPersistentState,
-  get: getAccessor,
+  get: getState,
+  set: setState,
   resetAll,
-};
+  onChange: onGlobalStateChange,
+  removeListener: removeGlobalStateListener,
+});

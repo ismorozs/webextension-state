@@ -4,6 +4,7 @@ module.exports = {
     filename: "webextension-state.js",
     library: "WebextensionState",
     libraryTarget: "umd",
+    libraryExport: "default",
     globalObject: "this",
   },
   mode: "development",
