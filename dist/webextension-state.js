@@ -134,8 +134,23 @@ const COMPUTED_ARGUMENTS = {};
 
 
 if (isBackgroundScript()) {
-  browser.storage.session.onChanged.addListener(onStateChange);
-  browser.storage.local.onChanged.addListener(onStateChange);
+  getStorage("local").onChanged.addListener(onStateChange);
+  isSessionStorageSupport() && getStorage("session").onChanged.addListener(
+    onStateChange,
+  );
+}
+
+function isStorageUsable (storageType) {
+  return storageType === "local" ||
+    (storageType === "session" && isSessionStorageSupport());
+}
+
+function getStorage (storageType) {
+  return browser.storage[storageType] || browser.storage["local"];
+}
+
+function isSessionStorageSupport () {
+  return !!browser.storage.session;
 }
 
 async function addPersistentState (initialState) {
@@ -143,13 +158,13 @@ async function addPersistentState (initialState) {
 }
 
 async function addState (initialState, isPersistent) {
-  const storageType = isPersistent && "local" || isBackgroundScript() && "session";
-  const defaultValues = Object.assign({}, initialState); 
+  const storageType = isBackgroundScript() && isPersistent && "local" || "session";
+  const defaultValues = Object.assign({}, initialState);
 
-  if (isBackgroundScript()) {
+  if (isStorageUsable(storageType)) {
     Object.assign(
       initialState,
-      await browser.storage[storageType].get(),
+      await getStorage(storageType).get(),
     );
   }
 
@@ -206,8 +221,8 @@ function createAccessor(key, value, storageType) {
 }
 
 function setValue (key, value, storageType) {
-  if (storageType) {
-    return browser.storage[storageType].set({ [key]: value });
+  if (isStorageUsable(storageType)) {
+    return getStorage(storageType).set({ [key]: value });
   }
 
   onStateChange({ [key]: { newValue: value } });
