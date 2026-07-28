@@ -1,6 +1,6 @@
 {
   "name": "webextension-state",
-  "version": "0.5.16",
+  "version": "0.5.26",
   "description": "Library for managing the state of webextensions, employing reactivity, wrapping and uniting usage of different storages' values and common variables with a simple universal interface",
   "license": "MIT",
   "author": "Igor Morozov <ismorozs@gmail.com>",
@@ -22,5 +22,16 @@
   },
   "homepage": "https://github.com/ismorozs/webextension-state",
   "repository": "https://github.com/ismorozs/webextension-state.git",
-  "bugs": "https://github.com/ismorozs/webextension-state/issues"
+  "bugs": "https://github.com/ismorozs/webextension-state/issues",
+  "keywords": [
+    "webextension",
+    "extension",
+    "reactivity",
+    "state",
+    "store",
+    "storage",
+    "reactive",
+    "management",
+    "development"
+  ]
 }
