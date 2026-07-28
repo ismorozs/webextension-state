@@ -8,7 +8,7 @@ npm install webextension-state
 ```
 then import with
 ```js
-import WebextensionState from 'webextension-state'
+import State from 'webextension-state'
 ```
 in your script file.
 
@@ -24,10 +24,10 @@ The library object features the following methods:
 .removeListener ()
 ```
 
-To operate on data, first you should add it to the store with either ```add``` or ```addPersistent``` methods. They perform the same functionality, except ```addPersistent``` allows state to be saved in storage and reused between browser sessions.
+Values are added to the store with ```add``` or ```addPersistent``` methods. They perform the same functionality, except ```addPersistent``` allows state to be saved in storage and reused between browser sessions.
 Signature of those methods is:
 ```js
-async add(
+async State.add(
   KeysValues {
     key1: value1,
     key2: value2,
@@ -45,55 +45,80 @@ Where:
 ```ComputeFunction``` - reevalutes and updates its value automatically each time ```dependencies``` parameters change. ```dependencies``` parameters are any state values defined before the ```ComputeFunction```. ```computedValue```s are not saved in storage.   
 ```StateAccessors``` - a map linking state ```key```s to special ```StateAccessor``` objects which will perform data manipulations and listener management.  
 
-**Important: ```add``` and ```addPersistent``` are asynchronous operations; you must `await` or use ```Promise.then``` to be sure that data is all set!**  
+**Important: ```add``` and ```addPersistent``` are asynchronous operations; you must `await` or use ```Promise.then``` to ensure all the data is ready to work with!**  
   
   
 
-After data is added, it can be accessed with:  
+Values can be accessed with:  
 ```js
-get () => StateValues
+State.get () => StateValues
 ```
 Where:  
-```StateValues``` - an object representing all the values in the store at the current moment  
+```StateValues``` - an object representing all the values in the store in the current namespace at the current moment  
   
 
 or
 ```js
-get (Callback (Accessors {}) => value) => value
+State.get (AccessorsCallback (StateAccessors {}, State) => value) => value
 ```
 Where:  
-```Callback``` - a function that takes all ```StateAccessors```, manipulates them, and can return any ```value```, which in turn will be returned from the whole ```get(Callback)``` call.
+```AccessorsCallback``` - a function that takes all ```StateAccessors``` and a ```State``` instance from the current namespace, manipulates them, and can return any ```value```, which in turn will be returned from the whole ```get(Callback)``` call.
 
 
-Data can be mutated with:
+Values can be mutated with:
 ```js
-async set (
+async State.set (
   KeysValues {
     key: value
     ...
   }
-)
+) => State
 ```
 **Important: values are updated asynchronously; don't assume the script will recognize the change immediately. Instead, make use of ```onChange``` listeners!**  
 
 To reset all stored values back to defaults:
 ```js
-async resetAll ()
+async State.resetAll () => State
 ```
 
 To listen and react to state changes:
 ```js
-onChange (Keys[], ChangeCallback(newValue, allValues, previousValue) => void)
+State.onChange (Keys[], ChangeCallback(newValue, allValues, previousValue) => void) => State
 ```
 Where:  
-```Keys``` (optional) - array of keys of state that you want to listen to. If omitted, ```ChangeCallback``` will run each time any state value change  
+```Keys``` - array of keys of the state in the current namespace that you want to listen to  
 ```ChangeCallback``` - function to run when a change happens
 
 To remove the listener:
 ```js
-removeListener(Keys, ChangeCallback)
+State.removeListener(Keys, ChangeCallback) => State
 ```
-the same parameter usage
+the same parameter usage. 
+  
+  
+  
+
+
+Methods ```.set()```, ```.resetAll()```, ```onChange```, and ```removeListener``` all return a new instance of ```State``` with the same namespace, so command chaining is possible.  
+Method ```.get(() => {})``` may return a new ```State``` instance.
+
+## Namespacing
+To avoid name collisions, put keys with the same name in different namespaces. You can create a new or get an existing namespace with
+```js
+State.get(String Namespace) => State
+```
+which will return a new instance of ```State``` with the specified ```Namespace```.
+
+## Shortcuts
+The library object itself can be called with different types of arguments, which will mirror almost all of its API.
+```js
+State() -> State.get()
+State(String namespace) -> State.get(namespace)
+State(() => {}) -> State.get(() => {})
+State({ key: value }) -> State.set({ key: value })
+State({}) -> State.resetAll()
+State([], () => {}) -> State.onChange([], () => {})
+```
 
 ## StateAccessor
 ```StateAccessor``` is a way to manipulate each piece of state individually. It's a function that can be called itself, but also an object with a set of methods:    
