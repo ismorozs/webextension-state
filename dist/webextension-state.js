@@ -86,7 +86,7 @@ function isArray(x) {
 }
 
 function getParamNames(fn) {
-  const fnStr = fn.toString().replace(STRIP_COMMENTS, "");
+  const fnStr = fn.toString().replace(STRIP_COMMENTS, "").split("=>")[0];
   const names = fnStr
     .slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")"))
     .match(ARGUMENT_NAMES);
@@ -114,18 +114,18 @@ function toCamelCase(str, delimiter) {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_13148__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_13163__) {
 
 "use strict";
-__nested_webpack_require_13148__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_13148__.d(__nested_webpack_exports__, {
+__nested_webpack_require_13163__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_13163__.d(__nested_webpack_exports__, {
 /* harmony export */   ACCESSORS: () => (/* binding */ ACCESSORS),
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_13148__(/*! ./storage */ "./src/storage.js");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_13148__(/*! ./helpers */ "./src/helpers.js");
-/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_13148__(/*! ./namespace */ "./src/namespace.js");
-/* harmony import */ var _validation__WEBPACK_IMPORTED_MODULE_3__ = __nested_webpack_require_13148__(/*! ./validation */ "./src/validation.js");
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_13163__(/*! ./storage */ "./src/storage.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_13163__(/*! ./helpers */ "./src/helpers.js");
+/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_13163__(/*! ./namespace */ "./src/namespace.js");
+/* harmony import */ var _validation__WEBPACK_IMPORTED_MODULE_3__ = __nested_webpack_require_13163__(/*! ./validation */ "./src/validation.js");
 
 
 
@@ -386,17 +386,17 @@ function createStore (_namespace) {
 /*!**************************!*\
   !*** ./src/namespace.js ***!
   \**************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_21591__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_21606__) {
 
 "use strict";
-__nested_webpack_require_21591__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_21591__.d(__nested_webpack_exports__, {
+__nested_webpack_require_21606__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_21606__.d(__nested_webpack_exports__, {
 /* harmony export */   addNamespace: () => (/* binding */ addNamespace),
 /* harmony export */   getByNamespace: () => (/* binding */ getByNamespace),
 /* harmony export */   namespacify: () => (/* binding */ namespacify),
 /* harmony export */   splitFullKey: () => (/* binding */ splitFullKey)
 /* harmony export */ });
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_21591__(/*! ./helpers */ "./src/helpers.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_21606__(/*! ./helpers */ "./src/helpers.js");
 
 
 const NAMESPACE_DELIMITER = "::";
@@ -438,11 +438,11 @@ function namespacify (namespace, obj) {
 /*!************************!*\
   !*** ./src/storage.js ***!
   \************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_23195__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_23210__) {
 
 "use strict";
-__nested_webpack_require_23195__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_23195__.d(__nested_webpack_exports__, {
+__nested_webpack_require_23210__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_23210__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 function updateFromLocalStorage(state) {
@@ -484,15 +484,15 @@ function setStorageValue(storageType, key, value) {
 /*!***************************!*\
   !*** ./src/validation.js ***!
   \***************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_24365__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_24380__) {
 
 "use strict";
-__nested_webpack_require_24365__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_24365__.d(__nested_webpack_exports__, {
+__nested_webpack_require_24380__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_24380__.d(__nested_webpack_exports__, {
 /* harmony export */   isValid: () => (/* binding */ isValid)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_24365__(/*! . */ "./src/index.js");
-/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_24365__(/*! ./namespace */ "./src/namespace.js");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_24380__(/*! . */ "./src/index.js");
+/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_24380__(/*! ./namespace */ "./src/namespace.js");
 
 
 
@@ -529,16 +529,16 @@ const isValid = {
 /*!*************************************!*\
   !*** ./src/webextension-storage.js ***!
   \*************************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_25764__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_25779__) {
 
 "use strict";
-__nested_webpack_require_25764__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_25764__.d(__nested_webpack_exports__, {
+__nested_webpack_require_25779__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_25779__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   isBackgroundScript: () => (/* binding */ isBackgroundScript),
 /* harmony export */   isSessionStorageSupport: () => (/* binding */ isSessionStorageSupport)
 /* harmony export */ });
-const browser = __nested_webpack_require_25764__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
+const browser = __nested_webpack_require_25779__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   GET_TYPE: getStorageType,
@@ -587,7 +587,7 @@ function isBackgroundScript() {
 /******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __nested_webpack_require_27558__(moduleId) {
+/******/ 	function __nested_webpack_require_27573__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
@@ -607,7 +607,7 @@ function isBackgroundScript() {
 /******/ 			e.code = 'MODULE_NOT_FOUND';
 /******/ 			throw e;
 /******/ 		}
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_27558__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_27573__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -617,13 +617,13 @@ function isBackgroundScript() {
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter/value functions for harmony exports
-/******/ 		__nested_webpack_require_27558__.d = (exports, definition) => {
+/******/ 		__nested_webpack_require_27573__.d = (exports, definition) => {
 /******/ 			if(Array.isArray(definition)) {
 /******/ 				var i = 0;
 /******/ 				while(i < definition.length) {
 /******/ 					var key = definition[i++];
 /******/ 					var binding = definition[i++];
-/******/ 					if(!__nested_webpack_require_27558__.o(exports, key)) {
+/******/ 					if(!__nested_webpack_require_27573__.o(exports, key)) {
 /******/ 						if(binding === 0) {
 /******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
 /******/ 						} else {
@@ -633,7 +633,7 @@ function isBackgroundScript() {
 /******/ 				}
 /******/ 			} else {
 /******/ 				for(var key in definition) {
-/******/ 					if(__nested_webpack_require_27558__.o(definition, key) && !__nested_webpack_require_27558__.o(exports, key)) {
+/******/ 					if(__nested_webpack_require_27573__.o(definition, key) && !__nested_webpack_require_27573__.o(exports, key)) {
 /******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 					}
 /******/ 				}
@@ -643,13 +643,13 @@ function isBackgroundScript() {
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__nested_webpack_require_27558__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__nested_webpack_require_27573__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
-/******/ 		__nested_webpack_require_27558__.r = (exports) => {
+/******/ 		__nested_webpack_require_27573__.r = (exports) => {
 /******/ 			if(Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
@@ -665,13 +665,13 @@ let __nested_webpack_exports__ = {};
 /*!*****************************!*\
   !*** ./src/webextension.js ***!
   \*****************************/
-__nested_webpack_require_27558__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_27558__.d(__nested_webpack_exports__, {
+__nested_webpack_require_27573__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_27573__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_27558__(/*! . */ "./src/index.js");
-/* harmony import */ var _webextension_storage__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_27558__(/*! ./webextension-storage */ "./src/webextension-storage.js");
-const browser = __nested_webpack_require_27558__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_27573__(/*! . */ "./src/index.js");
+/* harmony import */ var _webextension_storage__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_27573__(/*! ./webextension-storage */ "./src/webextension-storage.js");
+const browser = __nested_webpack_require_27573__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
 
 
 
