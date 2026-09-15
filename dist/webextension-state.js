@@ -74,7 +74,7 @@ function isFunction(x) {
 }
 
 function isObject(x) {
-  return typeof x === "object";
+  return Object.prototype.toString.call(x) === "[object Object]";
 }
 
 function isString(x) {
@@ -114,18 +114,18 @@ function toCamelCase(str, delimiter) {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_13163__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_13197__) {
 
 "use strict";
-__nested_webpack_require_13163__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_13163__.d(__nested_webpack_exports__, {
+__nested_webpack_require_13197__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_13197__.d(__nested_webpack_exports__, {
 /* harmony export */   ACCESSORS: () => (/* binding */ ACCESSORS),
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_13163__(/*! ./storage */ "./src/storage.js");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_13163__(/*! ./helpers */ "./src/helpers.js");
-/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_13163__(/*! ./namespace */ "./src/namespace.js");
-/* harmony import */ var _validation__WEBPACK_IMPORTED_MODULE_3__ = __nested_webpack_require_13163__(/*! ./validation */ "./src/validation.js");
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_13197__(/*! ./storage */ "./src/storage.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_13197__(/*! ./helpers */ "./src/helpers.js");
+/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_13197__(/*! ./namespace */ "./src/namespace.js");
+/* harmony import */ var _validation__WEBPACK_IMPORTED_MODULE_3__ = __nested_webpack_require_13197__(/*! ./validation */ "./src/validation.js");
 
 
 
@@ -211,7 +211,7 @@ function getArguments(computedName) {
     .concat(values);
 }
 
-function createAccessor(key, value, storageType) {
+function createAccessor(key, storageType) {
   const accessor = () => STATE[key].value;
 
   Object.assign(accessor, {
@@ -296,7 +296,7 @@ function getState(namespace, arg) {
 }
 
 function getNamespaceValues(namespace) {
-  return (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.getKeys)((0,_namespace__WEBPACK_IMPORTED_MODULE_2__.getByNamespace)(namespace, STATE), "value");
+  return recreateStructure((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.getKeys)((0,_namespace__WEBPACK_IMPORTED_MODULE_2__.getByNamespace)(namespace, STATE), "value"));
 }
 
 function getNamespaceAccessors (namespace, cb) {
@@ -339,6 +339,26 @@ function removeStateListener(namespace, observables, cb) {
   );
 
   return createStore(namespace());
+}
+
+function recreateStructure (value) {
+  let newValue = value;
+
+  if ((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isArray)(value)) {
+    newValue = [];
+    value.forEach((v) => newValue.push(recreateStructure(v)));
+    return newValue;
+  }
+
+  if ((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isObject)(value)) {
+    newValue = {};
+    for (let key in value) {
+      newValue[key] = recreateStructure(value[key]);
+    }
+    return newValue;
+  }
+
+  return newValue;
 }
 
 function main () {
@@ -386,17 +406,17 @@ function createStore (_namespace) {
 /*!**************************!*\
   !*** ./src/namespace.js ***!
   \**************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_21606__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_22130__) {
 
 "use strict";
-__nested_webpack_require_21606__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_21606__.d(__nested_webpack_exports__, {
+__nested_webpack_require_22130__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_22130__.d(__nested_webpack_exports__, {
 /* harmony export */   addNamespace: () => (/* binding */ addNamespace),
 /* harmony export */   getByNamespace: () => (/* binding */ getByNamespace),
 /* harmony export */   namespacify: () => (/* binding */ namespacify),
 /* harmony export */   splitFullKey: () => (/* binding */ splitFullKey)
 /* harmony export */ });
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_21606__(/*! ./helpers */ "./src/helpers.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_22130__(/*! ./helpers */ "./src/helpers.js");
 
 
 const NAMESPACE_DELIMITER = "::";
@@ -438,11 +458,11 @@ function namespacify (namespace, obj) {
 /*!************************!*\
   !*** ./src/storage.js ***!
   \************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_23210__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_23734__) {
 
 "use strict";
-__nested_webpack_require_23210__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_23210__.d(__nested_webpack_exports__, {
+__nested_webpack_require_23734__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_23734__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 function updateFromLocalStorage(state) {
@@ -484,15 +504,15 @@ function setStorageValue(storageType, key, value) {
 /*!***************************!*\
   !*** ./src/validation.js ***!
   \***************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_24380__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_24904__) {
 
 "use strict";
-__nested_webpack_require_24380__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_24380__.d(__nested_webpack_exports__, {
+__nested_webpack_require_24904__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_24904__.d(__nested_webpack_exports__, {
 /* harmony export */   isValid: () => (/* binding */ isValid)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_24380__(/*! . */ "./src/index.js");
-/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_24380__(/*! ./namespace */ "./src/namespace.js");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_24904__(/*! . */ "./src/index.js");
+/* harmony import */ var _namespace__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_24904__(/*! ./namespace */ "./src/namespace.js");
 
 
 
@@ -529,16 +549,16 @@ const isValid = {
 /*!*************************************!*\
   !*** ./src/webextension-storage.js ***!
   \*************************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_25779__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_26303__) {
 
 "use strict";
-__nested_webpack_require_25779__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_25779__.d(__nested_webpack_exports__, {
+__nested_webpack_require_26303__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_26303__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   isBackgroundScript: () => (/* binding */ isBackgroundScript),
 /* harmony export */   isSessionStorageSupport: () => (/* binding */ isSessionStorageSupport)
 /* harmony export */ });
-const browser = __nested_webpack_require_25779__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
+const browser = __nested_webpack_require_26303__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   GET_TYPE: getStorageType,
@@ -587,7 +607,7 @@ function isBackgroundScript() {
 /******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __nested_webpack_require_27573__(moduleId) {
+/******/ 	function __nested_webpack_require_28097__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
@@ -607,7 +627,7 @@ function isBackgroundScript() {
 /******/ 			e.code = 'MODULE_NOT_FOUND';
 /******/ 			throw e;
 /******/ 		}
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_27573__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_28097__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -617,13 +637,13 @@ function isBackgroundScript() {
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter/value functions for harmony exports
-/******/ 		__nested_webpack_require_27573__.d = (exports, definition) => {
+/******/ 		__nested_webpack_require_28097__.d = (exports, definition) => {
 /******/ 			if(Array.isArray(definition)) {
 /******/ 				var i = 0;
 /******/ 				while(i < definition.length) {
 /******/ 					var key = definition[i++];
 /******/ 					var binding = definition[i++];
-/******/ 					if(!__nested_webpack_require_27573__.o(exports, key)) {
+/******/ 					if(!__nested_webpack_require_28097__.o(exports, key)) {
 /******/ 						if(binding === 0) {
 /******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
 /******/ 						} else {
@@ -633,7 +653,7 @@ function isBackgroundScript() {
 /******/ 				}
 /******/ 			} else {
 /******/ 				for(var key in definition) {
-/******/ 					if(__nested_webpack_require_27573__.o(definition, key) && !__nested_webpack_require_27573__.o(exports, key)) {
+/******/ 					if(__nested_webpack_require_28097__.o(definition, key) && !__nested_webpack_require_28097__.o(exports, key)) {
 /******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 					}
 /******/ 				}
@@ -643,13 +663,13 @@ function isBackgroundScript() {
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__nested_webpack_require_27573__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__nested_webpack_require_28097__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
-/******/ 		__nested_webpack_require_27573__.r = (exports) => {
+/******/ 		__nested_webpack_require_28097__.r = (exports) => {
 /******/ 			if(Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
@@ -665,13 +685,13 @@ let __nested_webpack_exports__ = {};
 /*!*****************************!*\
   !*** ./src/webextension.js ***!
   \*****************************/
-__nested_webpack_require_27573__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_27573__.d(__nested_webpack_exports__, {
+__nested_webpack_require_28097__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_28097__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_27573__(/*! . */ "./src/index.js");
-/* harmony import */ var _webextension_storage__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_27573__(/*! ./webextension-storage */ "./src/webextension-storage.js");
-const browser = __nested_webpack_require_27573__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_28097__(/*! . */ "./src/index.js");
+/* harmony import */ var _webextension_storage__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_28097__(/*! ./webextension-storage */ "./src/webextension-storage.js");
+const browser = __nested_webpack_require_28097__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
 
 
 
