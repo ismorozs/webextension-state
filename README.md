@@ -19,8 +19,9 @@ in your script file.
 [1.3 Accessing ```.get()```](#accessing)  
 [1.4 Mutating ```.set()```/```.reset()```](#mutating)  
 [1.5 Listening ```.onChange()```/```.removeListener()```](#listening)  
-[1.6 Namespacing ```.get(Namespace)```](#namespacing)  
-[1.7 Method chaining](#chaining)  
+[1.6 Data encapsulation ```.actions()```](#actions)  
+[1.7 Namespacing ```.get(Namespace)```](#namespacing)  
+[1.8 Method chaining](#chaining)  
 2. [Shortcuts](#shortcuts)  
 3. [Example](#example)  
 
@@ -122,6 +123,28 @@ State.removeListener(
 ) => State
 ```
 the same parameter usage. 
+
+## Data encapsulation ```.actions()``` <a name="actions"></a>
+Hide away all public data access and mutation into dedicated functions with the help of ```IStateAction```s.  
+State.actions({
+  KeysActions {
+    key1: IStateAction1 (State, ...arguments[]) => void
+    key2: IStateAction2 (State, ...arguments[]) => void
+    ...
+  }
+})
+```
+```IStateAction``` function type binds ```State``` instance as the first argument, followed by all other ```arguments``` provided by the user at the time of the call.  
+These actions reside in the same scope as regular variables. So you can access them by the ```key```s defined in ```KeysActions``` object through the ```.get()``` method.
+```js
+State.add({ x: 1 });
+
+State.actions({
+  changeX: (varstor, newX) => varstor.set({ x: newX }), 
+}),
+
+State.get().changeX(10);
+```
   
 ## Namespacing ```.get(Namespace)``` <a name="namespacing"></a>
 To avoid name collisions, put keys with the same name in different namespaces. You can create a new or get an existing namespace with
@@ -179,12 +202,29 @@ State.removeListener(onChange);
 
 const newNamespace = State("new namespace");
 
-newNamespace.add({
-  yyy: 1,
-  zzz: 2,
+await newNamespace.add({
+  x: 1,
+  y: 2,
+  z: 3,
 });
 
-newNamespace({ zzz: 3 });
+newNamespace.actions({
+  logValues: ({ get }) => {
+    const { x, y, z } = get();
+    console.log(`x: ${x}, y: ${y}, z: ${z}`);
+  },
+  multiplyX: ({ get, set }, num) => set({ x: get().x * num }),
+  incrementY: ({ get, set }) => set({ y: get().y + 1 }),
+})
 
-console.log(State("new namespace").get()); // {yyy: 1, zzz: 3}
+const { logValues, multiplyX, incrementY } = newNamespace.get();
+
+logValues(); // x: 1, y: 2, z: 3
+multiplyX(10)
+incrementY();
+logValues(); // x: 10, y: 3, z: 3
+
+await newNamespace({ z: 110 });
+
+console.log(State("new namespace").get()); // {x: 10, y: 3, z: 110, logValues: ƒ, multiplyX: ƒ, …}
 ```
