@@ -14,7 +14,7 @@ in your script file.
 
 ## Contents
 1. [Usage](#overview)  
-[1.1 Creation ```.add()```/```.addPersistent()```](#creation)  
+[1.1 Creation ```.add()```/```.addPersistent()```/```.changes.*()```](#creation)  
 [1.2 Dynamic reevaluation (```ReactiveFunction```)](#reactivefunction)  
 [1.3 Accessing ```.get()```](#accessing)  
 [1.4 Mutating ```.set()```/```.reset()```](#mutating)  
@@ -26,15 +26,18 @@ in your script file.
 3. [Example](#example)  
 
 ## Usage <a name="overview"></a>
-The library object features the following methods:
+The library object features the following methods and properties:
 ```js
 .add ()
 .addPersistent ()
 .get ()
 .set ()
 .reset ()
+.changes {}
 .onChange ()
 .removeListener ()
+.actions ()
+.namespace () // just returns the string value of the current namespace
 ```
 
 ## Creation ```.add()```/```.addPersistent()``` <a name="creation"></a>
@@ -83,7 +86,7 @@ Where:
 
   
   
-## Mutating ```.set()```/```.reset()``` <a name="mutating"></a>
+## Mutating ```.set()```/```.reset()```/```.changes.*()``` <a name="mutating"></a>
 Values are mutated with:
 ```js
 async State.set(
@@ -93,13 +96,23 @@ async State.set(
   }
 ) => State
 ```
-
+\
 To reset values back to defaults:
 ```js
 async State.reset(Keys []) => State
 ```
 Where:  
 ```Keys[]``` (optional) - array of keys to return to default values. If omitted all values will be returned to defaults.  
+\
+For more control over the timing of state changes in the namespace, use ```.changes {}``` methods collection.
+```js
+State.changes.add(KeysValues {}) // => adds pending changes in the current namespace
+State.changes.reset(Keys []) // => adds pending changes that will reset some of the keys
+State.changes.get() // => gets pending changes in the current namespace
+State.changes.flush() // => returns and then empties the pending changes object
+State.changes.commit() // => actually commits all accumulated pending changes in the namespace
+```
+
 
 > [!WARNING]
 > Values are mutated asynchronously; don't assume the script will recognize the change immediately on the next line. Instead, ```await``` or make use of ```onChange``` listeners! 
@@ -111,18 +124,21 @@ To listen and react to state changes:
 ```js
 State.onChange(
   Keys[],
-  ChangeCallback(ChangedKeys [], allValues {}, PreviousValues {}) => void
+  ChangeCallback(ChangedKeys [], State) => void
 ) => State
 ```
 Where:  
 ```Keys[]``` (optional) - array of keys of the state in the current namespace that you want to listen to. If omitted, ```ChangeCallback``` will run on any value change in the namespace.  
-```ChangeCallback``` - function to run when a change happens
+  
 
+
+```ChangeCallback``` - a function to run when the change happens. Takes ```ChangedKeys[]``` array of keys that have been changed as the first argument, and a ```State``` instance as the second.
+\
 To remove the listener:
 ```js
 State.removeListener(
   Keys[],
-  ChangeCallback(ChangedKeys [], allValues {}, PreviousValues {}) => void
+  ChangeCallback(ChangedKeys [], State) => void
 ) => State
 ```
 the same parameter usage. 
@@ -144,7 +160,7 @@ These actions reside in the same scope as regular variables. So you can access t
 State.add({ x: 1 });
 
 State.actions({
-  changeX: (varstor, newX) => varstor.set({ x: newX }), 
+  changeX: (state, newX) => state.set({ x: newX }), 
 }),
 
 State.get().changeX(10);
@@ -159,7 +175,7 @@ which will return a new instance of ```State``` with the specified ```Namespace`
   
 
 ## Method chaining <a name="chaining"></a>
-Methods ```.add```, ```.addPersistent```, ```.set()```, ```.reset()```, ```onChange```, and ```removeListener``` all return a new instance of ```State``` with the same namespace, so method chaining is possible.  
+Methods ```.add```, ```.addPersistent```, ```.set()```, ```.reset()```, ```.onChange()```, and ```.removeListener()``` all return a new instance of ```State``` with the same namespace, so method chaining is possible.  
 
 
 ## Shortcuts <a name="shortcuts"></a>
@@ -169,12 +185,13 @@ State() -> State.get()
 State(String namespace) -> State.get(namespace)
 State({ key: value }) -> State.set({ key: value })
 State([], () => {}) -> State.onChange([], () => {})
+State(() => {}) -> State.onChange(() => {}) 
 ```
 
 ## Example <a name="example"></a>
 ```js
-function onChange(changes, values, data) {
-  console.log("onChange", changes, values, data);
+function onChange(changes, store) {
+  console.log("onChange", store.get());
 }
 
 State.add({
@@ -231,4 +248,22 @@ logValues(); // x: 10, y: 3, z: 3
 await newNamespace({ z: 110 });
 
 console.log(State("new namespace").get()); // {x: 10, y: 3, z: 110, logValues: ƒ, multiplyX: ƒ, …}
+
+
+const thirdNamespace = State("third namespace");
+
+thirdNamespace.add({
+  phrase: "Hello",
+  to: "world",
+});
+
+thirdNamespace.changes.add({ phrase: "Greetings" });
+thirdNamespace.changes.add({ to: "you" });
+
+console.log(thirdNamespace.get()) // {phrase: 'Hello', to: 'world'}
+
+thirdNamespace.changes.commit();
+
+console.log(thirdNamespace.get()) // {phrase: 'Greetings', to: 'you'}
+
 ```

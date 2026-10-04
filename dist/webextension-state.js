@@ -40,16 +40,11 @@ __nested_webpack_require_601__.r(__nested_webpack_exports__);
 /* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_601__(/*! . */ "./src/index.ts");
 
 function addStateActions(namespace, actions) {
-    const stateAcessor = {
-        get: ___WEBPACK_IMPORTED_MODULE_0__.getState.bind(null, namespace),
-        set: ___WEBPACK_IMPORTED_MODULE_0__.setState.bind(null, namespace),
-        reset: ___WEBPACK_IMPORTED_MODULE_0__.resetState.bind(null, namespace),
-    };
-    for (let [actionName, actionFn] of Object.entries(actions)) {
+    for (const [actionName, actionFn] of Object.entries(actions)) {
         ___WEBPACK_IMPORTED_MODULE_0__.STATE[namespace(actionName)] = {
             key: actionName,
             namespace,
-            value: actionFn.bind(null, stateAcessor),
+            value: actionFn.bind(null, (0,___WEBPACK_IMPORTED_MODULE_0__.createStore)(namespace())),
             isAction: true,
             listeners: [],
         };
@@ -63,11 +58,11 @@ function addStateActions(namespace, actions) {
 /*!**************************!*\
   !*** ./src/constants.ts ***!
   \**************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_1771__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_1554__) {
 
 "use strict";
-__nested_webpack_require_1771__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_1771__.d(__nested_webpack_exports__, {
+__nested_webpack_require_1554__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_1554__.d(__nested_webpack_exports__, {
 /* harmony export */   NAMESPACE_DELIMITER: () => (/* binding */ NAMESPACE_DELIMITER)
 /* harmony export */ });
 const NAMESPACE_DELIMITER = "::";
@@ -79,11 +74,11 @@ const NAMESPACE_DELIMITER = "::";
 /*!************************!*\
   !*** ./src/helpers.ts ***!
   \************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_2237__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_2020__) {
 
 "use strict";
-__nested_webpack_require_2237__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_2237__.d(__nested_webpack_exports__, {
+__nested_webpack_require_2020__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_2020__.d(__nested_webpack_exports__, {
 /* harmony export */   filter: () => (/* binding */ filter),
 /* harmony export */   forEach: () => (/* binding */ forEach),
 /* harmony export */   getParamNames: () => (/* binding */ getParamNames),
@@ -166,12 +161,13 @@ function uid() {
 /*!**********************!*\
   !*** ./src/index.ts ***!
   \**********************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_5098__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_4881__) {
 
 "use strict";
-__nested_webpack_require_5098__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_5098__.d(__nested_webpack_exports__, {
+__nested_webpack_require_4881__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_4881__.d(__nested_webpack_exports__, {
 /* harmony export */   STATE: () => (/* binding */ STATE),
+/* harmony export */   createPendingChanges: () => (/* binding */ createPendingChanges),
 /* harmony export */   createStore: () => (/* binding */ createStore),
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   getState: () => (/* binding */ getState),
@@ -181,18 +177,19 @@ __nested_webpack_require_5098__.r(__nested_webpack_exports__);
 /* harmony export */   setState: () => (/* binding */ setState),
 /* harmony export */   setupValue: () => (/* binding */ setupValue)
 /* harmony export */ });
-/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_5098__(/*! ./storage */ "./src/storage.ts");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_5098__(/*! ./helpers */ "./src/helpers.ts");
-/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_5098__(/*! ./actions */ "./src/actions.ts");
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __nested_webpack_require_5098__(/*! ./constants */ "./src/constants.ts");
-/* harmony import */ var _listeners__WEBPACK_IMPORTED_MODULE_4__ = __nested_webpack_require_5098__(/*! ./listeners */ "./src/listeners.ts");
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_4881__(/*! ./storage */ "./src/storage.ts");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_4881__(/*! ./helpers */ "./src/helpers.ts");
+/* harmony import */ var _actions__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_4881__(/*! ./actions */ "./src/actions.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __nested_webpack_require_4881__(/*! ./constants */ "./src/constants.ts");
+/* harmony import */ var _listeners__WEBPACK_IMPORTED_MODULE_4__ = __nested_webpack_require_4881__(/*! ./listeners */ "./src/listeners.ts");
 
 
 
 
 
 const STATE = {};
-const WAITING_CHANGES = {};
+const STATE_CHANGED_PIECES = {};
+const STATE_PENDING_CHANGES = {};
 const STORAGE = {};
 setStorageUtils(_storage__WEBPACK_IMPORTED_MODULE_0__["default"]);
 async function addState(namespace, initialState, isPersistent) {
@@ -201,9 +198,6 @@ async function addState(namespace, initialState, isPersistent) {
     const values = (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.map)(initialState, (k, v) => [namespace(k), v]);
     if (STORAGE.IS_AVAILABE(storageType)) {
         await STORAGE.UPDATE_STATE(values, storageType);
-    }
-    if (!_listeners__WEBPACK_IMPORTED_MODULE_4__.LISTENERS[namespace()]) {
-        _listeners__WEBPACK_IMPORTED_MODULE_4__.LISTENERS[namespace()] = [];
     }
     for (const key in initialState) {
         const fullKey = namespace(key);
@@ -258,7 +252,7 @@ function getArguments(dependencies, namespace) {
     return dependencies.map((name) => values[name]);
 }
 async function joinStateChanges(changesPiece) {
-    for (const [updateId, { storageTypes, readyStorageTypes, changes },] of Object.entries(WAITING_CHANGES)) {
+    for (const [updateId, { storageTypes, readyStorageTypes, changes },] of Object.entries(STATE_CHANGED_PIECES)) {
         if (changesPiece[updateId]) {
             const storageType = changesPiece[updateId].newValue;
             readyStorageTypes[storageType] = true;
@@ -272,7 +266,7 @@ async function joinStateChanges(changesPiece) {
                     return;
                 }
             }
-            delete WAITING_CHANGES[updateId];
+            delete STATE_CHANGED_PIECES[updateId];
             await onStateChange(changes);
         }
     }
@@ -338,7 +332,7 @@ async function setState(namespace, changes) {
         storageTypes[storageType] = true;
         storageChanges[storageType][fullKey] = v;
     });
-    WAITING_CHANGES[updateId] = {
+    STATE_CHANGED_PIECES[updateId] = {
         storageTypes,
         readyStorageTypes: {},
         changes: {},
@@ -358,17 +352,34 @@ async function setValues(storageType, changes) {
     joinStateChanges((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.map)(changes, (k, newValue) => [k, { newValue }]));
 }
 async function resetState(namespace, keys) {
-    const namespaceState = getNamespaceState(namespace);
-    await setState(namespace, (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.map)(keys
-        ? (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.filter)(namespaceState, (k, { key }) => keys.includes(key))
-        : namespaceState, (k, { key, defaultValue }) => [key, defaultValue]));
+    await setState(namespace, getDefaultValues(namespace, keys));
     return createStore(namespace());
+}
+function getDefaultValues(namespace, keys) {
+    const namespaceState = getNamespaceState(namespace);
+    return (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.map)(keys
+        ? (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.filter)(namespaceState, (k, { key }) => keys.includes(key))
+        : namespaceState, (k, { key, defaultValue }) => [key, defaultValue]);
+}
+function createPendingChanges(namespace) {
+    const flush = () => {
+        const changes = STATE_PENDING_CHANGES[namespace()];
+        STATE_PENDING_CHANGES[namespace()] = {};
+        return changes;
+    };
+    return {
+        add: (changes) => Object.assign(STATE_PENDING_CHANGES[namespace()], changes),
+        reset: (keys) => Object.assign(STATE_PENDING_CHANGES[namespace()], getDefaultValues(namespace, keys)),
+        get: () => STATE_PENDING_CHANGES[namespace()],
+        flush,
+        commit: () => setState(namespace, flush()),
+    };
 }
 function main(namespace) {
     if (!arguments[1] || (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isString)(arguments[1])) {
         return getState.apply(null, arguments);
     }
-    if ((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isArray)(arguments[1])) {
+    if ((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isArray)(arguments[1]) || (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isFunction)(arguments[1]) || (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isAsyncFunction)(arguments[1])) {
         return _listeners__WEBPACK_IMPORTED_MODULE_4__.addStateListener.apply(null, arguments);
     }
     if ((0,_helpers__WEBPACK_IMPORTED_MODULE_1__.isObject)(arguments[1])) {
@@ -383,12 +394,19 @@ function addNamespace(namespace, str) {
 }
 function createStore(_namespace) {
     const namespace = ((key) => addNamespace(_namespace, key));
+    if (!STATE_PENDING_CHANGES[namespace()]) {
+        STATE_PENDING_CHANGES[namespace()] = {};
+    }
+    if (!_listeners__WEBPACK_IMPORTED_MODULE_4__.LISTENERS[namespace()]) {
+        _listeners__WEBPACK_IMPORTED_MODULE_4__.LISTENERS[namespace()] = [];
+    }
     return Object.assign(main.bind(null, namespace), {
         add: (state) => addState(namespace, state, false),
         addPersistent: (state) => addState(namespace, state, true),
         get: (newNamespace) => getState(namespace, newNamespace),
         set: async (changes) => await setState(namespace, changes),
         reset: (keys) => resetState(namespace, keys),
+        changes: createPendingChanges(namespace),
         onChange: (keys, cb) => (0,_listeners__WEBPACK_IMPORTED_MODULE_4__.addStateListener)(namespace, keys, cb),
         removeListener: (keys, cb) => (0,_listeners__WEBPACK_IMPORTED_MODULE_4__.removeStateListener)(namespace, keys, cb),
         actions: (actions) => (0,_actions__WEBPACK_IMPORTED_MODULE_2__.addStateActions)(namespace, actions),
@@ -406,19 +424,19 @@ function createStore(_namespace) {
 /*!**************************!*\
   !*** ./src/listeners.ts ***!
   \**************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_15296__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_16162__) {
 
 "use strict";
-__nested_webpack_require_15296__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_15296__.d(__nested_webpack_exports__, {
+__nested_webpack_require_16162__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_16162__.d(__nested_webpack_exports__, {
 /* harmony export */   LISTENERS: () => (/* binding */ LISTENERS),
 /* harmony export */   addStateListener: () => (/* binding */ addStateListener),
 /* harmony export */   removeStateListener: () => (/* binding */ removeStateListener),
 /* harmony export */   runStateChangeListeners: () => (/* binding */ runStateChangeListeners)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_15296__(/*! . */ "./src/index.ts");
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_15296__(/*! ./constants */ "./src/constants.ts");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_15296__(/*! ./helpers */ "./src/helpers.ts");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_16162__(/*! . */ "./src/index.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_16162__(/*! ./constants */ "./src/constants.ts");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_2__ = __nested_webpack_require_16162__(/*! ./helpers */ "./src/helpers.ts");
 
 
 
@@ -426,11 +444,10 @@ const LISTENERS = {};
 async function runStateChangeListeners(realChanges) {
     if (Object.keys(realChanges).length) {
         const { namespace } = ___WEBPACK_IMPORTED_MODULE_0__.STATE[Object.keys(realChanges)[0]];
-        const stateValues = (0,___WEBPACK_IMPORTED_MODULE_0__.getValues)(namespace);
-        for (let [changeKey, change] of Object.entries(realChanges)) {
+        for (const [changeKey] of Object.entries(realChanges)) {
             const { listeners, key } = ___WEBPACK_IMPORTED_MODULE_0__.STATE[changeKey];
             for (const cb of listeners) {
-                const fn = cb.bind(null, [key], stateValues, change);
+                const fn = cb.bind(null, [key], (0,___WEBPACK_IMPORTED_MODULE_0__.createStore)(namespace()));
                 if ((0,_helpers__WEBPACK_IMPORTED_MODULE_2__.isAsyncFunction)(cb)) {
                     await fn();
                 }
@@ -442,10 +459,7 @@ async function runStateChangeListeners(realChanges) {
         const namespaceLength = `${namespace()}${_constants__WEBPACK_IMPORTED_MODULE_1__.NAMESPACE_DELIMITER}`.length;
         const readableKeys = (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.map)(realChanges, (k) => k.slice(namespaceLength));
         for (const cb of LISTENERS[namespace()]) {
-            const fn = cb.bind(null, readableKeys, stateValues, (0,_helpers__WEBPACK_IMPORTED_MODULE_2__.map)(realChanges, (k, v) => [
-                k.slice(namespaceLength),
-                v,
-            ]));
+            const fn = cb.bind(null, readableKeys, (0,___WEBPACK_IMPORTED_MODULE_0__.createStore)(namespace()));
             if ((0,_helpers__WEBPACK_IMPORTED_MODULE_2__.isAsyncFunction)(cb)) {
                 await fn();
             }
@@ -484,11 +498,11 @@ function removeStateListener(namespace, observables, removeCb) {
 /*!************************!*\
   !*** ./src/storage.ts ***!
   \************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_19112__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_19827__) {
 
 "use strict";
-__nested_webpack_require_19112__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_19112__.d(__nested_webpack_exports__, {
+__nested_webpack_require_19827__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_19827__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 async function updateFromLocalStorage(state) {
@@ -533,16 +547,16 @@ function removeStorageKey(type, key) {
 /*!*************************************!*\
   !*** ./src/webextension-storage.ts ***!
   \*************************************/
-(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_20526__) {
+(__unused_webpack_module, __nested_webpack_exports__, __nested_webpack_require_21241__) {
 
 "use strict";
-__nested_webpack_require_20526__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_20526__.d(__nested_webpack_exports__, {
+__nested_webpack_require_21241__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_21241__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   isBackgroundScript: () => (/* binding */ isBackgroundScript),
 /* harmony export */   isSessionStorageSupport: () => (/* binding */ isSessionStorageSupport)
 /* harmony export */ });
-const browser = __nested_webpack_require_20526__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
+const browser = __nested_webpack_require_21241__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
     GET_TYPE: getStorageType,
     IS_AVAILABE: isStorageAvailable,
@@ -609,7 +623,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __nested_webpack_require_33252__(moduleId) {
+/******/ 	function __nested_webpack_require_33967__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
@@ -629,7 +643,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /******/ 			e.code = 'MODULE_NOT_FOUND';
 /******/ 			throw e;
 /******/ 		}
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_33252__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_33967__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -639,13 +653,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter/value functions for harmony exports
-/******/ 		__nested_webpack_require_33252__.d = (exports, definition) => {
+/******/ 		__nested_webpack_require_33967__.d = (exports, definition) => {
 /******/ 			if(Array.isArray(definition)) {
 /******/ 				var i = 0;
 /******/ 				while(i < definition.length) {
 /******/ 					var key = definition[i++];
 /******/ 					var binding = definition[i++];
-/******/ 					if(!__nested_webpack_require_33252__.o(exports, key)) {
+/******/ 					if(!__nested_webpack_require_33967__.o(exports, key)) {
 /******/ 						if(binding === 0) {
 /******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
 /******/ 						} else {
@@ -655,7 +669,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /******/ 				}
 /******/ 			} else {
 /******/ 				for(var key in definition) {
-/******/ 					if(__nested_webpack_require_33252__.o(definition, key) && !__nested_webpack_require_33252__.o(exports, key)) {
+/******/ 					if(__nested_webpack_require_33967__.o(definition, key) && !__nested_webpack_require_33967__.o(exports, key)) {
 /******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 					}
 /******/ 				}
@@ -665,13 +679,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__nested_webpack_require_33252__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__nested_webpack_require_33967__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
-/******/ 		__nested_webpack_require_33252__.r = (exports) => {
+/******/ 		__nested_webpack_require_33967__.r = (exports) => {
 /******/ 			if(Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
@@ -687,13 +701,13 @@ let __nested_webpack_exports__ = {};
 /*!*****************************!*\
   !*** ./src/webextension.ts ***!
   \*****************************/
-__nested_webpack_require_33252__.r(__nested_webpack_exports__);
-/* harmony export */ __nested_webpack_require_33252__.d(__nested_webpack_exports__, {
+__nested_webpack_require_33967__.r(__nested_webpack_exports__);
+/* harmony export */ __nested_webpack_require_33967__.d(__nested_webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_33252__(/*! . */ "./src/index.ts");
-/* harmony import */ var _webextension_storage__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_33252__(/*! ./webextension-storage */ "./src/webextension-storage.ts");
-const browser = __nested_webpack_require_33252__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __nested_webpack_require_33967__(/*! . */ "./src/index.ts");
+/* harmony import */ var _webextension_storage__WEBPACK_IMPORTED_MODULE_1__ = __nested_webpack_require_33967__(/*! ./webextension-storage */ "./src/webextension-storage.ts");
+const browser = __nested_webpack_require_33967__(/*! webextension-polyfill/dist/browser-polyfill.min */ "./node_modules/webextension-polyfill/dist/browser-polyfill.min.js");
 
 
 const { joinStateChanges, setStorageUtils } = ___WEBPACK_IMPORTED_MODULE_0__["default"];
